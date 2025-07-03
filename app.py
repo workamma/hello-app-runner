@@ -1,13 +1,15 @@
 import py_avataaars
 import random, logging, sys
 import uvicorn
+import pymysql
+import pymysql.cursors
 
 from starlette.applications import Starlette
 from starlette.routing import Route, Mount
 from starlette.templating import Jinja2Templates
 from starlette.config import Config
 from starlette.staticfiles import StaticFiles
-from starlette.responses import PlainTextResponse, JSONResponse
+from starlette.responses import PlainTextResponse, JSONResponse, HTMLResponse
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from json import loads, dumps
@@ -23,6 +25,39 @@ global_state = {
 
 logging.basicConfig(stream=sys.stdout, level=eval('logging.' + getenv('LOG_LEVEL', 'INFO')))
 logging.debug('Log level is set to DEBUG.')
+
+# Function to connect to MySQL database
+def get_db_connection():
+    try:
+        connection = pymysql.connect(
+            host=getenv('DB_HOST', 'localhost'),
+            user=getenv('DB_USER', 'root'),
+            password=getenv('DB_PASSWORD', ''),
+            port=int(getenv('DB_PORT', 3306)),
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        return connection
+    except pymysql.MySQLError as e:
+        logging.error(f"Error connecting to MySQL database: {e}")
+        return None
+
+# Function to get list of databases
+def get_database_list():
+    connection = get_db_connection()
+    if connection is None:
+        return {"error": "Failed to connect to the database"}
+    
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW DATABASES")
+            databases = cursor.fetchall()
+            return {"databases": [db["Database"] for db in databases]}
+    except pymysql.MySQLError as e:
+        logging.error(f"Error querying databases: {e}")
+        return {"error": f"Database query error: {str(e)}"}
+    finally:
+        connection.close()
 
 # Generate and save a local avatar image
 def generate_avatar_image():
@@ -152,9 +187,85 @@ def index(request):
 def headers(request):
     return JSONResponse(dumps({k:v for k, v in request.headers.items()}))
 
+def databases(request):
+    result = get_database_list()
+    
+    if "error" in result:
+        error_message = result["error"]
+        html_content = f"""
+        <html>
+        <head>
+            <title>Database List - Error</title>
+            <style>
+                body {{ font-family: 'Open Sans', sans-serif; background-color: #161E2D; color: #FFFFFF; text-align: center; padding: 20px; }}
+                .error {{ color: #ff6b6b; padding: 20px; border: 1px solid #ff6b6b; border-radius: 5px; margin: 20px auto; max-width: 600px; }}
+                h1 {{ font-size: 24px; }}
+                .back-link {{ margin-top: 20px; }}
+                .back-link a {{ color: #527FFF; text-decoration: none; }}
+                .back-link a:hover {{ text-decoration: underline; }}
+            </style>
+        </head>
+        <body>
+            <h1>Database Connection Error</h1>
+            <div class="error">
+                <p>{error_message}</p>
+                <p>Please check your database connection settings in the environment variables.</p>
+            </div>
+            <div class="back-link">
+                <a href="/">Back to Home</a>
+            </div>
+        </body>
+        </html>
+        """
+    else:
+        databases = result["databases"]
+        db_list_html = "".join([f"<li>{db}</li>" for db in databases])
+        
+        html_content = f"""
+        <html>
+        <head>
+            <title>MySQL Database List</title>
+            <style>
+                body {{ font-family: 'Open Sans', sans-serif; background-color: #161E2D; color: #FFFFFF; text-align: center; padding: 20px; }}
+                .container {{ max-width: 800px; margin: 0 auto; }}
+                h1 {{ font-size: 24px; margin-bottom: 20px; }}
+                .db-list {{ background-color: #1E2738; border-radius: 5px; padding: 20px; text-align: left; }}
+                .db-list ul {{ list-style-type: none; padding: 0; }}
+                .db-list li {{ padding: 8px 0; border-bottom: 1px solid #2A3548; }}
+                .db-list li:last-child {{ border-bottom: none; }}
+                .connection-info {{ margin-top: 20px; font-size: 14px; color: #B0B8C8; text-align: left; }}
+                .back-link {{ margin-top: 20px; }}
+                .back-link a {{ color: #527FFF; text-decoration: none; }}
+                .back-link a:hover {{ text-decoration: underline; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>MySQL Database List</h1>
+                <div class="db-list">
+                    <ul>
+                        {db_list_html}
+                    </ul>
+                </div>
+                <div class="connection-info">
+                    <p>Connected to: {getenv('DB_HOST', 'localhost')}</p>
+                    <p>User: {getenv('DB_USER', 'root')}</p>
+                    <p>Port: {getenv('DB_PORT', '3306')}</p>
+                </div>
+                <div class="back-link">
+                    <a href="/">Back to Home</a>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+    
+    return HTMLResponse(content=html_content)
+
 routes = [
     Route('/', endpoint=index),
     Route('/headers', endpoint=headers),
+    Route('/databases', endpoint=databases),
     Mount('/static', app=StaticFiles(directory='static'), name='static'),
 ]
 

@@ -52,6 +52,43 @@ The service also provides a `/metrics` endpoint so you can see some of the long 
 This is an example of global state stored on a per container basis.
 It can be used for state management, in memory cache, or other application needs.
 
+### MySQL Database Connection
+
+The application can connect to an RDS MySQL database and display a list of available databases.
+To use this feature, you need to set the following environment variables:
+
+- `DB_HOST`: MySQL server hostname
+- `DB_USER`: MySQL username
+- `DB_PASSWORD`: MySQL password
+- `DB_PORT`: MySQL server port (default: 3306)
+
+You can access the database list by clicking on the "View Databases" link on the homepage or by navigating to `/databases` endpoint.
+
+To test the MySQL connection, you can run:
+
+```bash
+# Set environment variables
+export DB_HOST=your-rds-endpoint.region.rds.amazonaws.com
+export DB_USER=admin
+export DB_PASSWORD=your-password
+export DB_PORT=3306
+
+# Run the test script
+python test_mysql_connection.py
+```
+
+When deploying to App Runner, you can set these environment variables in the App Runner console or through the AWS CLI:
+
+```bash
+aws apprunner update-service --service-arn YOUR_SERVICE_ARN \
+  --source-configuration '{"ImageRepository": {...}, "EnvironmentVariables": {
+    "DB_HOST": "your-rds-endpoint.region.rds.amazonaws.com",
+    "DB_USER": "admin",
+    "DB_PASSWORD": "your-password",
+    "DB_PORT": "3306"
+  }}'
+```
+
 There also might be an easter egg or two if you read the code. ;)
 
 ## Development

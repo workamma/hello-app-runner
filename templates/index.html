@@ -127,7 +127,7 @@ a {
   line-height: 22px;
 }
 a:link {
-	text-decoration: none;
+        text-decoration: none;
 }
 a:visited {
   text-decoration: none;
@@ -146,92 +146,99 @@ html, body {
 }
 
 .banner {
-	left:0;
-	width:100%;
-	height: 100%;
-	display: inline-block;
-	position: relative;
+        left:0;
+        width:100%;
+        height: 100%;
+        display: inline-block;
+        position: relative;
 }
 
 .apprunner_icon {
-	width: 15%;
-	margin-top: 19%;
-	margin-bottom: 6%;
-	max-height: 200px;
-	min-width: 150px;
+        width: 15%;
+        margin-top: 19%;
+        margin-bottom: 6%;
+        max-height: 200px;
+        min-width: 150px;
 }
 
 @media only screen and (max-width: 875px) {
   body { background: url("{{ full_url ~ 'static/background-mobile.svg' }}") #161E2D no-repeat;}
-  .apprunner_icon {	min-width: 100px; }
+  .apprunner_icon {     min-width: 100px; }
   .icon { height: 60%; margin: 3%;}
   .flex-container {margin-top: 20%; margin-bottom: 30%;}
 }
 
 @media only screen and (min-width: 2000px) {
-  .apprunner_icon {	margin-top: 13%; }
+  .apprunner_icon {     margin-top: 13%; }
 }
 
 </style>
 </head>
 
 <body>
-	<div class="container">
-		<div class="banner">
-			<img class="apprunner_icon" src="{{ full_url ~ 'static/apprunner_icon.svg' }}" />
-		</div>
+        <div class="container">
+                <div class="banner">
+                        <img class="apprunner_icon" src="{{ full_url ~ 'static/apprunner_icon.svg' }}" />
+                </div>
 
-		<h1>And we're live!</h1>
-		<div class="metadata">
-			<p>
+                <h1>And we're live!</h1>
+                <div class="metadata">
+                        <p>
         {% if ( '0.0' in full_url or 'localhost' in full_url )  %}
           <h2>Contratulations, you deployed the container locally.</h2>
           <p class="subtext">If you would like to run this container publicly check out the links below to get started.</p>
         {% else %}
-					<h2>Congratulations, your service has successfully deployed on AWS App Runner.</h2>
+                                        <h2>Congratulations, your service has successfully deployed on AWS App Runner.</h2>
         {% endif %}
-			</p>
-		</div>
-		<div class=flex-container>
-			<div class='row'>
-				<div class='column'>
+                        </p>
+                </div>
+                <div class=flex-container>
+                        <div class='row'>
+                                <div class='column'>
           {% if ( '0.0' in full_url or 'localhost' in full_url )  %}
           <img class='icon' src="{{ full_url ~ 'static/git_icon.svg' }}" />
           {% else %}
-					<img class='icon' src="{{ full_url ~ 'static/twitter_icon.svg' }}" />
+                                        <img class='icon' src="{{ full_url ~ 'static/twitter_icon.svg' }}" />
           {% endif %}
-				</div>
-				<div class='column'>
-					<img class='icon' src="{{ full_url ~ 'static/workshop_icon.svg' }}" />
-				</div>
-				<div class='column'>
-					<img class='icon' src="{{ full_url ~ 'static/docs_icon.svg' }}" />
-				</div>
-			</div>
-			<div class='row'>
-				<div class='column'>
+                                </div>
+                                <div class='column'>
+                                        <img class='icon' src="{{ full_url ~ 'static/workshop_icon.svg' }}" />
+                                </div>
+                                <div class='column'>
+                                        <img class='icon' src="{{ full_url ~ 'static/docs_icon.svg' }}" />
+                                </div>
+                        </div>
+                        <div class='row'>
+                                <div class='column'>
           {% if ( '0.0' in full_url or 'localhost' in full_url )  %}
           <h3>See the code</h3>
           <p class='subtext'>Check out the code to run this site in</br>AWS App Runner.</p>
-					<a target="_blank" href="https://github.com/aws-containers/hello-app-runner">Github <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
+                                        <a target="_blank" href="https://github.com/aws-containers/hello-app-runner">Github <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
           {% else %}
-					<h3>Share on Twitter</h3>
-					<p class='subtext'>A unique image has been generated for your service. <br>Share to see yours!</p>
-					<a target="_blank" href="https://twitter.com/intent/tweet?text=I%20just%20deployed%20my%20first%20app%20using%20AWS%20App%20Runner%21%20https://apprunnerworkshop.com%20🚀&hashtags=AWSAppRunner&url={{ full_url }}">Share <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
+                                        <h3>Share on Twitter</h3>
+                                        <p class='subtext'>A unique image has been generated for your service. <br>Share to see yours!</p>
+                                        <a target="_blank" href="https://twitter.com/intent/tweet?text=I%20just%20deployed%20my%20first%20app%20using%20AWS%20App%20Runner%21%20https://apprunnerworkshop.com%20🚀&hashtags=AWSAppRunner&url={{ full_url }}">Share <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
           {% endif %}
-				</div>
-				<div class='column'>
-					<h3>Learn more in the workshop</h3>
-					<p class='subtext'>Deploy with automated CI/CD and additional examples.</p>
-					<a target="_blank" href="https://apprunnerworkshop.com">Learn more <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
-				</div>
-				<div class='column'>
-					<h3>Explore App Runner docs</h3>
-					<p class='subtext'>Leverage App Runner for production services.</p>
-					<a target="_blank" href="https://docs.aws.amazon.com/apprunner">Visit docs <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
-				</div>
-			</div>
-		</div>
-	</div>
+                                </div>
+                                <div class='column'>
+                                        <h3>Learn more in the workshop</h3>
+                                        <p class='subtext'>Deploy with automated CI/CD and additional examples.</p>
+                                        <a target="_blank" href="https://apprunnerworkshop.com">Learn more <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
+                                </div>
+                                <div class='column'>
+                                        <h3>Explore App Runner docs</h3>
+                                        <p class='subtext'>Leverage App Runner for production services.</p>
+                                        <a target="_blank" href="https://docs.aws.amazon.com/apprunner">Visit docs <img src="{{ full_url ~ 'static/external_link_icon.svg' }}" /></a>
+                                </div>
+                                <div class='row' style="margin-top: 20px;">
+                                        <div class='column'>
+                                                <h3>MySQL Database List</h3>
+                                                <p class='subtext'>View all databases in your RDS MySQL instance.</p>
+                                                <a href="/databases">View Databases</a>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+        </div>
 </body>
 </html>

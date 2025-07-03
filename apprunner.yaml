@@ -9,3 +9,11 @@ run:
   command: python app.py
   network:
     port: 8000
+  env:
+    # Uncomment and modify these lines to configure HTTP proxy settings
+    - name: HTTP_PROXY
+      value: http://10.0.0.189:3128
+    - name: HTTPS_PROXY
+      value: http://10.0.0.189:3128
+    # - name: NO_PROXY
+    #   value: localhost,127.0.0.1

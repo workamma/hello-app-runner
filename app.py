@@ -7,11 +7,11 @@ from starlette.routing import Route, Mount
 from starlette.templating import Jinja2Templates
 from starlette.config import Config
 from starlette.staticfiles import StaticFiles
-from starlette.responses import PlainTextResponse, JSONResponse
+from starlette.responses import PlainTextResponse, JSONResponse, HTMLResponse
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from json import loads, dumps
-from requests import get
+from requests import get, RequestException
 from os import getenv, urandom, path, environ
 from PIL import Image
 
@@ -152,9 +152,104 @@ def index(request):
 def headers(request):
     return JSONResponse(dumps({k:v for k, v in request.headers.items()}))
 
+def proxy_request(request):
+    """
+    Access https://checkip.amazonaws.com/ through an HTTP proxy
+    using proxy settings from environment variables.
+    """
+    # Get proxy settings from environment variables
+    http_proxy = environ.get('HTTP_PROXY', environ.get('http_proxy', ''))
+    https_proxy = environ.get('HTTPS_PROXY', environ.get('https_proxy', ''))
+    no_proxy = environ.get('NO_PROXY', environ.get('no_proxy', ''))
+    
+    # Create proxies dictionary for requests
+    proxies = {}
+    if http_proxy:
+        proxies['http'] = http_proxy
+    if https_proxy:
+        proxies['https'] = https_proxy
+    
+    target_url = 'https://checkip.amazonaws.com/'
+    
+    try:
+        # Make the request through the proxy
+        response = get(target_url, proxies=proxies, timeout=10)
+        ip_address = response.text.strip()
+        
+        # Create HTML response
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>HTTP Proxy Request Result</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 40px; }}
+                .container {{ max-width: 800px; margin: 0 auto; }}
+                .result {{ background-color: #f0f0f0; padding: 20px; border-radius: 5px; }}
+                .success {{ color: green; }}
+                .error {{ color: red; }}
+                pre {{ background-color: #f8f8f8; padding: 10px; border-radius: 5px; overflow-x: auto; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>HTTP Proxy Request Result</h1>
+                <div class="result">
+                    <h2>Your IP Address:</h2>
+                    <pre>{ip_address}</pre>
+                    
+                    <h2>Proxy Configuration:</h2>
+                    <pre>HTTP_PROXY: {http_proxy or 'Not set'}
+HTTPS_PROXY: {https_proxy or 'Not set'}
+NO_PROXY: {no_proxy or 'Not set'}</pre>
+                    
+                    <p class="success">Request successful! Status code: {response.status_code}</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+        
+    except RequestException as e:
+        # Create error HTML response
+        error_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>HTTP Proxy Request Error</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 40px; }}
+                .container {{ max-width: 800px; margin: 0 auto; }}
+                .result {{ background-color: #f0f0f0; padding: 20px; border-radius: 5px; }}
+                .error {{ color: red; }}
+                pre {{ background-color: #f8f8f8; padding: 10px; border-radius: 5px; overflow-x: auto; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>HTTP Proxy Request Error</h1>
+                <div class="result">
+                    <h2>Error Details:</h2>
+                    <p class="error">{str(e)}</p>
+                    
+                    <h2>Proxy Configuration:</h2>
+                    <pre>HTTP_PROXY: {http_proxy or 'Not set'}
+HTTPS_PROXY: {https_proxy or 'Not set'}
+NO_PROXY: {no_proxy or 'Not set'}</pre>
+                    
+                    <p>Please check your proxy configuration and try again.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=error_html, status_code=500)
+
 routes = [
     Route('/', endpoint=index),
     Route('/headers', endpoint=headers),
+    Route('/proxy', endpoint=proxy_request),
     Mount('/static', app=StaticFiles(directory='static'), name='static'),
 ]
 
